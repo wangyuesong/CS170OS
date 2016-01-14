@@ -180,31 +180,17 @@ int main(int argc, char ** argv){
         free(result);
         printf("Thread %d joined\n",i);
     }
-    //    in_arg * arg = (in_arg *)malloc(sizeof(in_arg));
-    //    out_arg * result = (out_arg *)malloc(sizeof(out_arg));
-    //    arg->a = matrix_a;
-    //    arg->b = matrix_b;
-    //    arg->from_row = 0;
-    //    arg->to_row = matrix_a->rows;
-    //    err = pthread_create(&thread_id, NULL, compute_thread, (void*)arg);
-    //
-    //    err = pthread_join(thread_id, (void**)result);
-    //    double * result_matrix = (double *)malloc(matrix_a->rows * matrix_b->cols * sizeof(double));
-    //    for(int i = 0 ; i < matrix_a->rows; i++){
-    //        double *one_strip = compute_strip(matrix_a,matrix_b,i);
-    //        for(int j = 0 ; j < matrix_a->cols; j++){
-    //            result_matrix[i * matrix_b->cols + j] = one_strip[j];
-    //        }
-    //        free(one_strip);
-    //    }
     
     printf("Total time spent:%f\n", CTimer() - start_time);
     printf("\n");
-  //  for(int i = 0 ; i < matrix_a->rows * matrix_b->cols; i ++){
-//     printf("%f ",final_result[i]);
-//        if(i % matrix_b->cols == matrix_b->cols-1)
-  //          printf("\n");
-   // }
+    printf("%d %d\n", matrix_a->rows, matrix_b->cols);
+    for(int i = 0 ; i < matrix_a->rows * matrix_b->cols; i ++){
+        if(i % matrix_b-> cols == 0)
+            printf("# Row %d\n",i/ matrix_b->cols);
+        printf("%f ",final_result[i]);
+       if(i % matrix_b->cols == matrix_b->cols-1)
+          printf("\n");
+    }
 
     
 }

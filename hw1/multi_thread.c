@@ -4,6 +4,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <sys/time.h>
+
+int debug = 0;
 typedef struct {
     int rows;
     int cols;
@@ -59,13 +61,18 @@ matrix * read_matrix(char * loc){
     for(int i = 0; i < row; i ++){
         for(int j = 0; j < col; j ++){
             char line[1000];
+            //memset(line,0,sizeof(line));
             while(fgets(line, 1000, fp)!= NULL){
                 if(line[0] == '#')
                     continue;
                 else
                     break;
             }
+            printf("\n");
+            printf("Current String:%s",line);
             result_matrix->data[i * col + j] = atof(line);
+            printf("Current Double:%f", result_matrix->data[i * col + j]);
+    //        free(line); 
         }
     }
     
@@ -108,20 +115,20 @@ void * compute_thread(void * a){
     
     out->from_row = arg->from_row;
     out->to_row = arg->to_row;
-    
     return (void *)out;
 }
 
 int main(int argc, char ** argv){
-    printf("hello");
     double start_time = CTimer();
     matrix * matrix_a;
     matrix * matrix_b;
     int thread_count = 0;
-    //  if(argc != 7){
-    //      fprintf(stderr, "%s", "Not enough arguments");
-    //      exit(-1);
-    //  }
+    if(!debug){
+        if(argc != 7){
+            fprintf(stderr, "%s", "Not enough arguments");
+            exit(-1);
+        }
+    }
     for(int i = 1; i < argc; i ++){
         if(strcmp(argv[i],"-a") == 0){
             matrix_a = read_matrix(argv[i+1]);
@@ -187,7 +194,7 @@ int main(int argc, char ** argv){
     for(int i = 0 ; i < matrix_a->rows * matrix_b->cols; i ++){
         if(i % matrix_b-> cols == 0)
             printf("# Row %d\n",i/ matrix_b->cols);
-        printf("%f ",final_result[i]);
+        printf("%f\n",final_result[i]);
        if(i % matrix_b->cols == matrix_b->cols-1)
           printf("\n");
     }

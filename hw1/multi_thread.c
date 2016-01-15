@@ -171,7 +171,7 @@ int main(int argc, char ** argv){
     }
     
     int optValue=0;
-    while((optValue = getopt(argc,argv,"a:b:t")) != EOF) {
+    while((optValue = getopt(argc,argv,"a:b:t:")) != EOF) {
         switch(optValue) {
             case 'a':
                 matrix_a = read_matrix(optarg);

@@ -78,6 +78,8 @@ matrix * read_matrix(char * loc){
     result_matrix->cols = col;
     
     result_matrix->data = (double *)malloc(row * col * sizeof(double));
+    
+    const char s[] = " \t\r\n\v\f";
     for(int i = 0; i < row; i ++){
         for(int j = 0; j < col; j ++){
             char line[1000];
@@ -88,10 +90,24 @@ matrix * read_matrix(char * loc){
                 else
                     break;
             }
-            if(!isNumeric(line)){
-                fprintf(stderr,"Error while parsing line: %s\n", line);
+            
+            char *tokens;
+            tokens = strtok(line, s);
+            int token_count = 0;
+            while(tokens != NULL){
+                if(!isNumeric(tokens)){
+                    fprintf(stderr,"Error while parsing line: %s, not numeric\n", line);
+                    exit(-1);
+                }
+                token_count ++;
+                tokens = strtok(NULL, s);
+            }
+            if(token_count != 1){
+                fprintf(stderr,"Error while parsing line: %s, too many arguments in a line \n", line);
                 exit(-1);
             }
+            
+            
             result_matrix->data[i * col + j] = atof(line);
             if(debug){
                 printf("\n");
@@ -153,7 +169,7 @@ int main(int argc, char ** argv){
             exit(-1);
         }
     }
-
+    
     int optValue=0;
     while((optValue = getopt(argc,argv,"a:b:t")) != EOF) {
         switch(optValue) {
@@ -172,22 +188,11 @@ int main(int argc, char ** argv){
                 exit(1);
         }
     }
-
+    
     if (thread_count<1){
         fprintf(stderr, "%s", "Thread count must be >=1 \n");
         exit(-1);
     }
-    // for(int i = 1; i < argc; i ++){
-    //     if(strcmp(argv[i],"-a") == 0){
-    //         matrix_a = read_matrix(argv[i+1]);
-    //     }
-    //     if(strcmp(argv[i],"-b") == 0){
-    //         matrix_b = read_matrix(argv[i+1]);
-    //     }
-    //     if(strcmp(argv[i],"-t") == 0){
-    //         thread_count = atoi(argv[i+1]);
-    //     }
-    // }
     if(matrix_a->cols != matrix_b->rows){
         fprintf(stderr, "%s", "a and b not computable\n");
         exit(-1);

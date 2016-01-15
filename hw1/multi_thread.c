@@ -57,7 +57,7 @@ matrix * read_matrix(char * loc){
     FILE *fp;
     matrix * result_matrix;
     if((fp=fopen(loc,"rt")) == NULL){
-        printf("ERROR: Cannot find the file %s", loc);
+        printf("ERROR: Cannot find the file %s\n", loc);
         exit(-1);
     }
     int row = -1;
@@ -65,12 +65,12 @@ matrix * read_matrix(char * loc){
     char *row_col = (char*)malloc(60* sizeof(char));
     if(fgets(row_col, 60, fp) != NULL){
         if(sscanf(row_col, "%d%d", &row, &col) !=2){
-            printf("ERROR: Matrix dimensional count incorrect");
+            printf("ERROR: Matrix dimensional count incorrect\n");
             exit(-1);
         }
     }
     else{
-        printf("ERROR: Matrix dimensional count incorrect");
+        printf("ERROR: Matrix dimensional count incorrect\n");
         exit(-1);
     }
     result_matrix = (matrix *)malloc(sizeof(matrix));
@@ -89,14 +89,14 @@ matrix * read_matrix(char * loc){
                     break;
             }
             if(!isNumeric(line)){
-                fprintf(stderr,"Error while parsing line: %s", line);
+                fprintf(stderr,"Error while parsing line: %s\n", line);
                 exit(-1);
             }
             result_matrix->data[i * col + j] = atof(line);
             if(debug){
                 printf("\n");
-                printf("Current String:%s",line);
-                printf("Current Double:%f", result_matrix->data[i * col + j]);
+                printf("Current String:%s\n",line);
+                printf("Current Double:%f\n", result_matrix->data[i * col + j]);
             }
             //        free(line);
         }
@@ -149,23 +149,47 @@ int main(int argc, char ** argv){
     int thread_count = 0;
     if(!debug){
         if(argc != 7){
-            fprintf(stderr, "%s", "Not enough arguments");
+            fprintf(stderr, "%s\n", "Not enough arguments");
             exit(-1);
         }
     }
-    for(int i = 1; i < argc; i ++){
-        if(strcmp(argv[i],"-a") == 0){
-            matrix_a = read_matrix(argv[i+1]);
-        }
-        if(strcmp(argv[i],"-b") == 0){
-            matrix_b = read_matrix(argv[i+1]);
-        }
-        if(strcmp(argv[i],"-t") == 0){
-            thread_count = atoi(argv[i+1]);
+
+    int optValue=0;
+    while((optValue = getopt(argc,argv,"a:b:t")) != EOF) {
+        switch(optValue) {
+            case 'a':
+                matrix_a = read_matrix(optarg);
+                break;
+            case 'b':
+                matrix_b = read_matrix(optarg);
+                break;
+            case 't':
+                thread_count = atoi(optarg);
+                break;
+            default:
+                fprintf(stderr,"Option not recognized %c\n", (char)optValue);
+                fprintf(stderr,"Usage: %s","my_matrix_multiply -a a_matrix_file.txt -b b_matrix_file.txt -t thread_count\n");
+                exit(1);
         }
     }
+
+    if (thread_count<1){
+        fprintf(stderr, "%s", "Thread count must be >=1 \n");
+        exit(-1);
+    }
+    // for(int i = 1; i < argc; i ++){
+    //     if(strcmp(argv[i],"-a") == 0){
+    //         matrix_a = read_matrix(argv[i+1]);
+    //     }
+    //     if(strcmp(argv[i],"-b") == 0){
+    //         matrix_b = read_matrix(argv[i+1]);
+    //     }
+    //     if(strcmp(argv[i],"-t") == 0){
+    //         thread_count = atoi(argv[i+1]);
+    //     }
+    // }
     if(matrix_a->cols != matrix_b->rows){
-        fprintf(stderr, "%s", "a and b not computable");
+        fprintf(stderr, "%s", "a and b not computable\n");
         exit(-1);
     }
     

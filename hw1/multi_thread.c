@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-int debug = 0;
+int debug = 1;
 typedef struct {
     int rows;
     int cols;
@@ -31,6 +31,26 @@ double CTimer() {
     
     gettimeofday(&tm,NULL);
     return((double)tm.tv_sec + (double)(tm.tv_usec/1000000.0));
+}
+
+
+int isNumeric(const char *str){
+    int decimal = 0;
+    if(*str == '-') ++str;
+    else if(*str == '.'){
+        decimal = 1;
+        ++str;
+    }
+    if(!*str) return 0;
+    while(*str){
+        if(!decimal && *str == '.'){
+            decimal = 1;
+            ++str;
+        }
+        if(!isdigit(*str)) return 0;
+        else ++str;
+    }
+    return 1;
 }
 
 matrix * read_matrix(char * loc){
@@ -61,21 +81,26 @@ matrix * read_matrix(char * loc){
     for(int i = 0; i < row; i ++){
         for(int j = 0; j < col; j ++){
             char line[1000];
-            //memset(line,0,sizeof(line));
+            memset(line,0,sizeof(line));
             while(fgets(line, 1000, fp)!= NULL){
                 if(line[0] == '#')
                     continue;
                 else
                     break;
             }
-            printf("\n");
-            printf("Current String:%s",line);
+            if(!isNumeric(line)){
+                fprintf(stderr,"Error while parsing line: %s", line);
+                exit(-1);
+            }
             result_matrix->data[i * col + j] = atof(line);
-            printf("Current Double:%f", result_matrix->data[i * col + j]);
-    //        free(line); 
+            if(debug){
+                printf("\n");
+                printf("Current String:%s",line);
+                printf("Current Double:%f", result_matrix->data[i * col + j]);
+            }
+            //        free(line);
         }
     }
-    
     return result_matrix;
 }
 
@@ -98,7 +123,6 @@ double* compute_strip(matrix *a, matrix *b, int a_strip){
 void * compute_thread(void * a){
     in_arg * arg = (in_arg *)a;
     //一维模拟二维
-    
     double * result = (double *)malloc((arg->to_row - arg->from_row) * arg->b->cols * sizeof(double));
     out_arg * out = (out_arg *)malloc(sizeof(out_arg));
     out->result = result;
@@ -170,12 +194,14 @@ int main(int argc, char ** argv){
             arg->to_row = row_count;
         }
         err = pthread_create(&(thread_ids[i]), NULL, compute_thread, (void *)arg);
-        printf("Thread %d started, take row %d to %d \n",i,arg->from_row, arg->to_row);
+        if(debug)
+            printf("Thread %d started, take row %d to %d \n",i,arg->from_row, arg->to_row);
     }
     
     for(int i = 0; i < thread_count; i ++){
         out_arg * out = (out_arg *)malloc(sizeof(out_arg));
-        printf("Main thread is about to join threads\n");
+        if(debug)
+            printf("Main thread is about to join threads\n");
         err = pthread_join(thread_ids[i], (void**)&out);
         double *result = out->result;
         for(int i = out->from_row; i < out->to_row; i++){
@@ -185,20 +211,22 @@ int main(int argc, char ** argv){
         }
         free(out);
         free(result);
-        printf("Thread %d joined\n",i);
+        if(debug)
+            printf("Thread %d joined\n",i);
     }
-    
-    printf("Total time spent:%f\n", CTimer() - start_time);
-    printf("\n");
+    if(debug){
+        printf("Total time spent:%f\n", CTimer() - start_time);
+        printf("\n");
+    }
     printf("%d %d\n", matrix_a->rows, matrix_b->cols);
     for(int i = 0 ; i < matrix_a->rows * matrix_b->cols; i ++){
         if(i % matrix_b-> cols == 0)
             printf("# Row %d\n",i/ matrix_b->cols);
         printf("%f\n",final_result[i]);
-       if(i % matrix_b->cols == matrix_b->cols-1)
-          printf("\n");
+        if(i % matrix_b->cols == matrix_b->cols-1)
+            printf("\n");
     }
-
+    
     
 }
 
